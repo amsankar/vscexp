@@ -80,7 +80,7 @@ class WorkspaceExplorer implements
       return (vscode.workspace.workspaceFolders ?? []).map((folder) => ({
         uri: folder.uri,
         kind: 'root',
-        label: this.getRootLabel(folder)
+        label: this.getRepositoryLabel(folder.uri, folder.name, true)
       }));
     }
 
@@ -96,7 +96,9 @@ class WorkspaceExplorer implements
           return {
             uri: vscode.Uri.joinPath(node.uri, name),
             kind: isDirectory ? 'folder' : 'file',
-            label: name
+            label: isDirectory
+              ? this.getRepositoryLabel(vscode.Uri.joinPath(node.uri, name), name)
+              : name
           } satisfies ExplorerNode;
         })
         .sort((first, second) => {
@@ -192,12 +194,14 @@ class WorkspaceExplorer implements
     }
   }
 
-  private getRootLabel(folder: vscode.WorkspaceFolder): string {
+  private getRepositoryLabel(uri: vscode.Uri, label: string, includeParent = false): string {
     const repository = this.gitApi?.repositories
-      .filter((candidate) => isUriEqualOrParent(candidate.rootUri, folder.uri))
+      .filter((candidate) => includeParent
+        ? isUriEqualOrParent(candidate.rootUri, uri)
+        : isUriEqualOrParent(candidate.rootUri, uri) && isUriEqualOrParent(uri, candidate.rootUri))
       .sort((first, second) => second.rootUri.fsPath.length - first.rootUri.fsPath.length)[0];
     const branch = repository?.state.HEAD?.name;
-    return branch ? `${folder.name} [${branch}]` : folder.name;
+    return branch ? `${label} [${branch}]` : label;
   }
 
   dispose(): void {

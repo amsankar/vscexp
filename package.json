@@ -3,7 +3,7 @@
   "displayName": "Workspace Explorer with Git Branches",
   "description": "Browse workspace files with current Git branch names shown beside each root.",
   "license": "MIT",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "SankarMurugesan",
   "repository": {
     "type": "git",
