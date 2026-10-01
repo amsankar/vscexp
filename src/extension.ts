@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 type NodeKind = 'root' | 'folder' | 'file';
 const treeMimeType = 'application/vnd.code.tree.sanvsexpExplorer';
+const criticalBranches = new Set(['main', 'master', 'init', 'develop', 'release']);
 
 interface ExplorerNode {
   readonly uri: vscode.Uri;
@@ -44,11 +45,14 @@ function isUriEqualOrParent(parentUri: vscode.Uri, childUri: vscode.Uri): boolea
 class WorkspaceExplorer implements
   vscode.TreeDataProvider<ExplorerNode>,
   vscode.TreeDragAndDropController<ExplorerNode>,
+  vscode.FileDecorationProvider,
   vscode.Disposable {
   readonly dragMimeTypes = [treeMimeType];
   readonly dropMimeTypes = [treeMimeType];
   private readonly treeChanged = new vscode.EventEmitter<ExplorerNode | undefined | null | void>();
   readonly onDidChangeTreeData = this.treeChanged.event;
+  private readonly decorationsChanged = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>();
+  readonly onDidChangeFileDecorations = this.decorationsChanged.event;
   private readonly fileWatchers: vscode.Disposable[] = [];
   private readonly gitSubscriptions: vscode.Disposable[] = [];
   private readonly repositorySubscriptions = new Map<GitRepository, vscode.Disposable>();
@@ -171,17 +175,42 @@ class WorkspaceExplorer implements
     }
   }
 
+  provideFileDecoration(uri: vscode.Uri): vscode.FileDecoration | undefined {
+    const isWorkspaceRoot = vscode.workspace.workspaceFolders?.some(
+      (folder) => folder.uri.toString() === uri.toString()
+    ) ?? false;
+    const repository = this.getRepository(uri, isWorkspaceRoot);
+    const branch = repository?.state.HEAD?.name;
+    if (!branch) {
+      return undefined;
+    }
+
+    const normalizedBranch = branch.toLowerCase();
+    const isCritical = criticalBranches.has(normalizedBranch) || normalizedBranch.startsWith('release/');
+    return new vscode.FileDecoration(
+      undefined,
+      isCritical
+        ? `Critical branch ${branch}: avoid committing or pushing directly to this branch.`
+        : `Branch ${branch}`,
+      new vscode.ThemeColor(isCritical
+        ? 'gitDecoration.deletedResourceForeground'
+        : 'gitDecoration.addedResourceForeground')
+    );
+  }
+
   attachGit(api: GitApi): void {
     this.gitApi = api;
     this.gitSubscriptions.push(
       api.onDidOpenRepository((repository) => {
         this.watchRepository(repository);
         this.refresh();
+        this.decorationsChanged.fire(undefined);
       }),
       api.onDidCloseRepository((repository) => {
         this.repositorySubscriptions.get(repository)?.dispose();
         this.repositorySubscriptions.delete(repository);
         this.refresh();
+        this.decorationsChanged.fire(undefined);
       })
     );
     api.repositories.forEach((repository) => this.watchRepository(repository));
@@ -190,16 +219,23 @@ class WorkspaceExplorer implements
 
   private watchRepository(repository: GitRepository): void {
     if (!this.repositorySubscriptions.has(repository)) {
-      this.repositorySubscriptions.set(repository, repository.state.onDidChange(() => this.refresh()));
+      this.repositorySubscriptions.set(repository, repository.state.onDidChange(() => {
+        this.refresh();
+        this.decorationsChanged.fire(undefined);
+      }));
     }
   }
 
-  private getRepositoryLabel(uri: vscode.Uri, label: string, includeParent = false): string {
-    const repository = this.gitApi?.repositories
+  private getRepository(uri: vscode.Uri, includeParent = false): GitRepository | undefined {
+    return this.gitApi?.repositories
       .filter((candidate) => includeParent
         ? isUriEqualOrParent(candidate.rootUri, uri)
-        : isUriEqualOrParent(candidate.rootUri, uri) && isUriEqualOrParent(uri, candidate.rootUri))
+        : candidate.rootUri.toString() === uri.toString())
       .sort((first, second) => second.rootUri.fsPath.length - first.rootUri.fsPath.length)[0];
+  }
+
+  private getRepositoryLabel(uri: vscode.Uri, label: string, includeParent = false): string {
+    const repository = this.getRepository(uri, includeParent);
     const branch = repository?.state.HEAD?.name;
     return branch ? `${label} [${branch}]` : label;
   }
@@ -214,6 +250,7 @@ class WorkspaceExplorer implements
     }
     this.repositorySubscriptions.clear();
     this.treeChanged.dispose();
+    this.decorationsChanged.dispose();
   }
 }
 
@@ -225,7 +262,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     canSelectMany: true,
     dragAndDropController: provider
   });
-  context.subscriptions.push(provider, treeView);
+  context.subscriptions.push(
+    provider,
+    treeView,
+    vscode.window.registerFileDecorationProvider(provider)
+  );
   provider.watchWorkspace();
   context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
