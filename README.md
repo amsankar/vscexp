@@ -18,18 +18,15 @@ Browse workspace files in a dedicated Explorer view, with each folder labeled by
 3. Open the **Explorer** activity and expand **Workspace Explorer**.
 4. Expand a workspace root to browse its files. Branch labels appear when the built-in Git extension detects a repository.
 
+## Prerequisites
+
+- Visual Studio Code 1.85 or later.
+- No additional runtime dependencies are required.
+- Enable VS Code's built-in Git extension to display branch names. File browsing works without Git.
+
 ## Notes
 
 This extension adds a separate view inside the Explorer container; it does not replace or modify VS Code's built-in Explorer. Workspace roots without a detected Git repository appear without a branch suffix.
-
-## Development
-
-```sh
-npm install
-npm run compile
-```
-
-Press `F5` to launch the Extension Development Host. Run `npm run watch` to compile automatically while developing.
 
 ## License
 
