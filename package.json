@@ -2,6 +2,7 @@
   "name": "sanvsexp",
   "displayName": "sanvsexp",
   "description": "An Explorer view that displays Git branches beside workspace folders.",
+  "license": "MIT",
   "version": "0.0.1",
   "publisher": "sanvsexp",
   "engines": {
