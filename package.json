@@ -1,15 +1,30 @@
 {
   "name": "sanvsexp",
-  "displayName": "sanvsexp",
-  "description": "An Explorer view that displays Git branches beside workspace folders.",
+  "displayName": "Workspace Explorer with Git Branches",
+  "description": "Browse workspace files with current Git branch names shown beside each root.",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "SankarMurugesan",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amsankar/vscexp.git"
+  },
+  "homepage": "https://github.com/amsankar/vscexp#readme",
+  "bugs": {
+    "url": "https://github.com/amsankar/vscexp/issues"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "explorer",
+    "file browser",
+    "git",
+    "workspace",
+    "branch"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -17,7 +32,7 @@
       "explorer": [
         {
           "id": "sanvsexp.workspaceExplorer",
-          "name": "sanvsexp",
+          "name": "Workspace Explorer",
           "icon": "resources/explorer.svg"
         }
       ]
@@ -25,13 +40,13 @@
     "viewsWelcome": [
       {
         "view": "sanvsexp.workspaceExplorer",
-        "contents": "Open a folder to browse its files.\n[Open Folder](command:workbench.action.files.openFolder)"
+        "contents": "Open a workspace folder to browse its files. Git branch names appear when a repository is detected.\n[Open Folder](command:workbench.action.files.openFolder)"
       }
     ],
     "commands": [
       {
         "command": "sanvsexp.refreshExplorer",
-        "title": "Refresh sanvsexp Explorer",
+        "title": "Refresh Workspace Explorer",
         "category": "sanvsexp",
         "icon": "$(refresh)"
       },
