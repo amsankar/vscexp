@@ -1,0 +1,165 @@
+{
+  "name": "sanvsexp",
+  "displayName": "sanvsexp",
+  "description": "An Explorer view that displays Git branches beside workspace folders.",
+  "version": "0.0.1",
+  "publisher": "sanvsexp",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "sanvsexp.workspaceExplorer",
+          "name": "sanvsexp",
+          "icon": "resources/explorer.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "sanvsexp.workspaceExplorer",
+        "contents": "Open a folder to browse its files.\n[Open Folder](command:workbench.action.files.openFolder)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "sanvsexp.refreshExplorer",
+        "title": "Refresh sanvsexp Explorer",
+        "category": "sanvsexp",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "sanvsexp.createFile",
+        "title": "New File",
+        "category": "sanvsexp",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "sanvsexp.createFolder",
+        "title": "New Folder",
+        "category": "sanvsexp",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "sanvsexp.copy",
+        "title": "Copy",
+        "category": "sanvsexp",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "sanvsexp.cut",
+        "title": "Cut",
+        "category": "sanvsexp",
+        "icon": "$(cut)"
+      },
+      {
+        "command": "sanvsexp.paste",
+        "title": "Paste",
+        "category": "sanvsexp",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "sanvsexp.copyPath",
+        "title": "Copy Path",
+        "category": "sanvsexp"
+      },
+      {
+        "command": "sanvsexp.rename",
+        "title": "Rename",
+        "category": "sanvsexp"
+      },
+      {
+        "command": "sanvsexp.delete",
+        "title": "Delete",
+        "category": "sanvsexp"
+      },
+      {
+        "command": "sanvsexp.revealInExplorer",
+        "title": "Reveal in Built-in Explorer",
+        "category": "sanvsexp"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "sanvsexp.refreshExplorer",
+          "when": "view == sanvsexp.workspaceExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "sanvsexp.createFile",
+          "when": "view == sanvsexp.workspaceExplorer && viewItem == root",
+          "group": "1_create"
+        },
+        {
+          "command": "sanvsexp.createFolder",
+          "when": "view == sanvsexp.workspaceExplorer && viewItem == root",
+          "group": "1_create"
+        },
+        {
+          "command": "sanvsexp.createFile",
+          "when": "view == sanvsexp.workspaceExplorer && viewItem == folder",
+          "group": "1_create"
+        },
+        {
+          "command": "sanvsexp.createFolder",
+          "when": "view == sanvsexp.workspaceExplorer && viewItem == folder",
+          "group": "1_create"
+        },
+        {
+          "command": "sanvsexp.cut",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == folder || viewItem == file)",
+          "group": "2_edit@1"
+        },
+        {
+          "command": "sanvsexp.copy",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == folder || viewItem == file)",
+          "group": "2_edit@2"
+        },
+        {
+          "command": "sanvsexp.paste",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == root || viewItem == folder)",
+          "group": "2_edit@3"
+        },
+        {
+          "command": "sanvsexp.copyPath",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == root || viewItem == folder || viewItem == file)",
+          "group": "3_navigation@1"
+        },
+        {
+          "command": "sanvsexp.rename",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == folder || viewItem == file)",
+          "group": "2_edit"
+        },
+        {
+          "command": "sanvsexp.delete",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == folder || viewItem == file)",
+          "group": "2_edit"
+        },
+        {
+          "command": "sanvsexp.revealInExplorer",
+          "when": "view == sanvsexp.workspaceExplorer && (viewItem == root || viewItem == folder || viewItem == file)",
+          "group": "3_navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.9.3"
+  }
+}
